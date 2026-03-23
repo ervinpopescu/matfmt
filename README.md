@@ -42,9 +42,24 @@ function result = compute(a, b, c)
 end
 ```
 
-## Options
+## Config file
+
+Drop a `matfmt.toml` in your project root to set defaults:
+
+```toml
+indent_width = 4
+separate_blocks = true
+indent_mode = "all_functions"
+operator_spacing = "exclude_pow"
+matrix_indent = "aligned"
+```
+
+All fields are optional — only set what you want to change. CLI flags override the config file. You can also point to a specific config with `--config path/to/config.toml`.
+
+## CLI options
 
 ```
+--config <PATH>              config file (default: matfmt.toml in cwd)
 --indent-width <N>           spaces per indent level (default: 4)
 --indent-mode <MODE>         all-functions | only-nested | classic
 --operator-spacing <MODE>    all-operators | exclude-pow | no-spaces

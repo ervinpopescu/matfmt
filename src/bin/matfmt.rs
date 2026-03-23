@@ -1,7 +1,8 @@
 use clap::Parser;
-use matfmt::{Formatter, FormatterConfig, IndentMode, MatrixIndent, OperatorSpacing};
+use matfmt::{FileConfig, Formatter, IndentMode, MatrixIndent, OperatorSpacing};
 use std::fs;
 use std::io::{self, Read};
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "matfmt", about = "MATLAB code formatter")]
@@ -9,21 +10,25 @@ struct Cli {
     /// Input file (use - for stdin)
     file: String,
 
+    /// Config file path (default: matfmt.toml in current dir)
+    #[arg(long)]
+    config: Option<PathBuf>,
+
     /// Spaces per indent level
-    #[arg(long, default_value_t = 4)]
-    indent_width: u32,
+    #[arg(long)]
+    indent_width: Option<u32>,
 
     /// Function indent mode
-    #[arg(long, value_enum, default_value_t = IndentMode::AllFunctions)]
-    indent_mode: IndentMode,
+    #[arg(long, value_enum)]
+    indent_mode: Option<IndentMode>,
 
     /// Operator spacing mode
-    #[arg(long, value_enum, default_value_t = OperatorSpacing::ExcludePow)]
-    operator_spacing: OperatorSpacing,
+    #[arg(long, value_enum)]
+    operator_spacing: Option<OperatorSpacing>,
 
     /// Matrix continuation indent mode
-    #[arg(long, value_enum, default_value_t = MatrixIndent::Aligned)]
-    matrix_indent: MatrixIndent,
+    #[arg(long, value_enum)]
+    matrix_indent: Option<MatrixIndent>,
 
     /// Don't insert blank lines around control blocks
     #[arg(long)]
@@ -41,13 +46,27 @@ fn main() -> io::Result<()> {
         fs::read_to_string(&cli.file)?
     };
 
-    let config = FormatterConfig {
-        indent_width: cli.indent_width,
-        separate_blocks: !cli.no_separate_blocks,
-        indent_mode: cli.indent_mode,
-        operator_spacing: cli.operator_spacing,
-        matrix_indent: cli.matrix_indent,
-    };
+    // Load config: defaults <- config file <- CLI flags
+    let config_path = cli.config.unwrap_or_else(|| PathBuf::from("matfmt.toml"));
+    let file_config = FileConfig::load(&config_path).unwrap_or_default();
+    let mut config = file_config.into_config();
+
+    // CLI flags override file config
+    if let Some(v) = cli.indent_width {
+        config.indent_width = v;
+    }
+    if let Some(v) = cli.indent_mode {
+        config.indent_mode = v;
+    }
+    if let Some(v) = cli.operator_spacing {
+        config.operator_spacing = v;
+    }
+    if let Some(v) = cli.matrix_indent {
+        config.matrix_indent = v;
+    }
+    if cli.no_separate_blocks {
+        config.separate_blocks = false;
+    }
 
     let mut formatter = Formatter::new(config);
     print!("{}", formatter.format(&input));
