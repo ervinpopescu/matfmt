@@ -6,7 +6,7 @@ Port of [matlab-formatter-vscode](https://github.com/affenwiesel/matlab-formatte
 
 ## Install
 
-```sh
+```
 cargo install --path .
 ```
 
