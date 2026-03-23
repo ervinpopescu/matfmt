@@ -2,7 +2,7 @@
 
 MATLAB code formatter in Rust. Formats `.m` files: fixes indentation, normalizes operator spacing, aligns multi-line matrices, and handles line continuations (`...`).
 
-Port of [matlab-formatter-vscode](https://github.com/AEditorFormatter/matlab-formatter-vscode).
+Port of [matlab-formatter-vscode](https://github.com/affenwiesel/matlab-formatter-vscode).
 
 ## Install
 

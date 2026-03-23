@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**matfmt** is a Rust rewrite of the [matlab-formatter-vscode](https://github.com/AEditorFormatter/matlab-formatter-vscode) Python-based MATLAB code formatter. It formats `.m` files by handling indentation for control structures, expression formatting with operator spacing, multi-line matrix/cell array alignment, and line continuation.
+**matfmt** is a Rust rewrite of the [matlab-formatter-vscode](https://github.com/affenwiesel/matlab-formatter-vscode) Python-based MATLAB code formatter. It formats `.m` files by handling indentation for control structures, expression formatting with operator spacing, multi-line matrix/cell array alignment, and line continuation.
 
 The original Python implementation is preserved in `original_project/matlab_formatter.py` for reference.
 
