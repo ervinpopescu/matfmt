@@ -1,4 +1,13 @@
+use std::path::Path;
+
 use matfmt::{Formatter, FormatterConfig, IndentMode, OperatorSpacing, MatrixIndent};
+
+fn fixture(name: &str) -> String {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures")
+        .join(name);
+    std::fs::read_to_string(path).unwrap()
+}
 
 fn fmt(input: &str) -> String {
     let mut f = Formatter::new(FormatterConfig::default());
@@ -298,7 +307,7 @@ end
 
 #[test]
 fn test_full_file_post_formatter() {
-    let input = std::fs::read_to_string("original_project/test_post_formatter.m").unwrap();
+    let input = fixture("post_formatter.m");
     let expected = "\
 clear
 
@@ -321,5 +330,195 @@ tmp = sprintf( ...
 );
 ";
 
+    assert_eq!(fmt(&input), expected);
+}
+
+// === File-based fixture tests ===
+
+#[test]
+fn test_fixture_classdef() {
+    let input = fixture("classdef.m");
+    let expected = "\
+classdef MyClass
+
+    properties
+        x
+        y
+    end
+
+    methods
+
+        function obj = MyClass(a, b)
+            obj.x = a;
+            obj.y = b;
+        end
+
+        function r = add(obj)
+            r = obj.x + obj.y;
+        end
+
+    end
+
+end
+";
+    assert_eq!(fmt(&input), expected);
+}
+
+#[test]
+fn test_fixture_comments_and_ignore() {
+    let input = fixture("comments_and_ignore.m");
+    let expected = "\
+% Top-level comment
+function foo()
+    % line comment
+    a = 1;
+
+%{
+  This is a block comment.
+  It should not be reformatted.
+    Weird    spacing   preserved.
+%}
+
+    % formatter ignore 2
+    x=1+  2;
+    y=3*   4;
+
+    z = 5 + 6;
+end
+";
+    assert_eq!(fmt(&input), expected);
+}
+
+#[test]
+fn test_fixture_ellipsis() {
+    let input = fixture("ellipsis.m");
+    let expected = "\
+function result = longcall(a, b, c)
+    result = very_long_function_name(a, ...
+        b, ...
+        c);
+
+    x = a + ...
+        b + ...
+        c;
+
+    y = sprintf('%s %s %s', ...
+        \"hello\", ... first
+        \"world\", ... second
+    \"!\"); ... third
+    end
+";
+    assert_eq!(fmt(&input), expected);
+}
+
+#[test]
+fn test_fixture_matrix_ops() {
+    let input = fixture("matrix_ops.m");
+    let expected = "\
+function result = matops(A, B)
+    % Matrix operations demo
+    C = [1 2 3;
+         4 5 6;
+         7 8 9];
+
+    D = {A
+         B
+         C};
+
+    result = A * B + C .* D{3};
+
+    M = [1 0 0;
+         0 1 0;
+         0 0 1];
+
+    v = [1, 2, 3];
+end
+";
+    assert_eq!(fmt(&input), expected);
+}
+
+#[test]
+fn test_fixture_nested_functions() {
+    let input = fixture("nested_functions.m");
+    let expected = "\
+function result = outer(x)
+    result = inner(x) + 1;
+
+    function y = inner(x)
+        y = x * 2;
+    end
+
+end
+";
+    assert_eq!(fmt(&input), expected);
+}
+
+#[test]
+fn test_fixture_operators() {
+    let input = fixture("operators.m");
+    let expected = "\
+a = 1 + 2;
+b = 3 - 4;
+c = 5 * 6;
+d = 7/8;
+e = a == b;
+f = a ~= b;
+g = a >= b;
+h = a <= b;
+i = a && b;
+j = a || b;
+k = a.^2;
+m = a^2;
+n += 1;
+p .+= 2;
+q = -x;
+r = +y;
+s = ~flag;
+t = !flag;
+u = 'hello';
+v = \"world\";
+w = 1:10;
+x = 1:2:10;
+y = foo(a, b, c);
+z = [1, 2; 3, 4];
+";
+    assert_eq!(fmt(&input), expected);
+}
+
+#[test]
+fn test_fixture_switch_case() {
+    let input = fixture("switch_case.m");
+    let expected = "\
+function grade = getGrade(score)
+
+    switch score
+        case 100
+            grade = 'A+';
+        case {90, 91, 92, 93, 94, 95, 96, 97, 98, 99}
+            grade = 'A';
+        otherwise
+            grade = 'F';
+    end
+
+end
+";
+    assert_eq!(fmt(&input), expected);
+}
+
+#[test]
+fn test_fixture_try_catch() {
+    let input = fixture("try_catch.m");
+    let expected = "\
+function safe_divide(a, b)
+
+    try
+        result = a / b;
+        disp(result);
+    catch e
+        fprintf('Error: %s\\n', e.message);
+    end
+
+end
+";
     assert_eq!(fmt(&input), expected);
 }
